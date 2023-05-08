@@ -63,6 +63,7 @@ class MDATPDriver(OData):
         self.api_root = api_uri
         self.api_ver = "api"
         self.api_suffix = api_suffix
+        self.is_graph = kwargs.get('is_graph', False)
         if self.data_environment == DataEnvironment.M365D:
             self.scopes = ["https://api.security.microsoft.com/AdvancedHunting.Read"]
         else:
@@ -99,12 +100,14 @@ class MDATPDriver(OData):
             query, body=True, api_end=self.api_suffix
         )
         if isinstance(data, pd.DataFrame):
+            # The response schema field is lowercase when using the graph API 
+            schema_field = "schema" if self.is_graph == True else "Schema"
             # If we got a schema we should convert the DateTimes to pandas datetimes
-            if "Schema" not in response:
+            if schema_field not in response:
                 return data
             date_fields = [
                 field["Name"]
-                for field in response["Schema"]
+                for field in response[schema_field]
                 if field["Type"] == "DateTime"
             ]
             data = ensure_df_datetimes(data, columns=date_fields)

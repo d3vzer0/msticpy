@@ -264,11 +264,14 @@ class OData(DriverBase):
             )
             return None, json_response  # type: ignore
 
-        result = json_response.get("Results", json_response)
+        # The response results field is lowercase when using the graph API 
+        results_field = "results" if self.is_graph == True else "Results"
+        result = json_response.get(results_field, json_response)
 
         if not result:
             print("Warning - query did not return any results.")
             return None, json_response  # type: ignore
+        
         return pd.json_normalize(result), json_response
 
     # pylint: enable=too-many-branches
