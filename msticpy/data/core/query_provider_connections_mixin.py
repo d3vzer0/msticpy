@@ -95,4 +95,4 @@ class QueryProviderConnectionsMixin(QueryProviderProtocol):
                 results.append(query_res)
             except MsticpyDataQueryError:
                 print(f"Query {con_name} failed.")
-        return pd.concat(results)
+        return pd.concat(results, ignore_index=True)
