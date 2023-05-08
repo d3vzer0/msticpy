@@ -81,18 +81,18 @@ class QueryProviderConnectionsMixin(QueryProviderProtocol):
         ]
         return [f"Default: {self._query_provider.current_connection}", *add_connections]
 
-    def _exec_additional_connections(self, query, result, **kwargs) -> pd.DataFrame:
+    def _exec_additional_connections(self, query, **kwargs) -> pd.DataFrame:
         """Return results of query run query against additional connections."""
         query_source = kwargs.get("query_source")
         query_options = kwargs.get("query_options", {})
-        results = [result]
+        results = []
         print(f"Running query for {len(self._additional_connections)} connections.")
         for con_name, connection in self._additional_connections.items():
             print(f"{con_name}...")
             try:
-                results.append(
-                    connection.query(query, query_source=query_source, **query_options)
-                )
+                query_res = connection.query(query, query_source=query_source, **query_options)
+                query_res['MsticpyConnection'] = con_name
+                results.append(query_res)
             except MsticpyDataQueryError:
                 print(f"Query {con_name} failed.")
         return pd.concat(results)

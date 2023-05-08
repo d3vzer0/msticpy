@@ -215,7 +215,7 @@ class QueryProvider(QueryProviderConnectionsMixin, QueryProviderUtilsMixin):
                query, query_source=query_source, **query_options
             )
             return result
-        return self._exec_additional_connections(query, result, **kwargs)
+        return self._exec_additional_connections(query, **kwargs)
 
     @property
     def query_time(self):
