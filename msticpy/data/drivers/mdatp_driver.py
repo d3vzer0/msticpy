@@ -100,15 +100,18 @@ class MDATPDriver(OData):
             query, body=True, api_end=self.api_suffix
         )
         if isinstance(data, pd.DataFrame):
-            # The response schema field is lowercase when using the graph API 
+            # The response schema field is lowercase when using the graph API
             schema_field = "schema" if self.is_graph == True else "Schema"
+            data_name_field = "name" if self.is_graph == True else "Name"
+            data_type_field = "type" if self.is_graph == True else "Type"
             # If we got a schema we should convert the DateTimes to pandas datetimes
             if schema_field not in response:
                 return data
+            
             date_fields = [
-                field["Name"]
+                field[data_name_field]
                 for field in response[schema_field]
-                if field["Type"] == "DateTime"
+                if field[data_type_field] == "DateTime"
             ]
             data = ensure_df_datetimes(data, columns=date_fields)
             return data
