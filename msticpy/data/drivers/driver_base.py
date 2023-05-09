@@ -84,6 +84,8 @@ class DriverBase(ABC):
         # self.formatters: Dict[str, Callable] = {}
         # self.use_query_paths = True
         # self.has_driver_queries = False
+        self._support_threads = False
+        self.max_threads = kwargs.get("max_threads", 4)
         self._previous_connection = False
         self.data_environment = kwargs.get("data_environment")
         self._query_filter: Dict[str, Set[str]] = defaultdict(set)

@@ -7,6 +7,7 @@
 from typing import Any, Dict, List, Optional, Protocol
 
 import pandas as pd
+import concurrent.futures
 
 from ..._version import VERSION
 from ...common.exceptions import MsticpyDataQueryError
@@ -87,12 +88,28 @@ class QueryProviderConnectionsMixin(QueryProviderProtocol):
         query_options = kwargs.get("query_options", {})
         results = []
         print(f"Running query for {len(self._additional_connections)} connections.")
-        for con_name, connection in self._additional_connections.items():
-            print(f"{con_name}...")
-            try:
-                query_res = connection.query(query, query_source=query_source, **query_options)
-                query_res['MsticpyConnection'] = con_name
-                results.append(query_res)
-            except MsticpyDataQueryError:
-                print(f"Query {con_name} failed.")
+        if self._query_provider._support_threads:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self._query_provider.max_threads) as executor:
+                all_tasks = {}
+                for con_name, connection in self._additional_connections.items():
+                    try:
+                        task = executor.submit(connection.query, query, query_source=query_source, **query_options)
+                        all_tasks[task] = con_name
+                    except MsticpyDataQueryError:
+                        print(f"Query {con_name} failed.")
+                        pass
+
+                for future in concurrent.futures.as_completed(all_tasks):
+                    result = future.result()
+                    result['MsticpyConnection'] = all_tasks[future]
+                    results.append(result)
+        else:
+            for con_name, connection in self._additional_connections.items():
+                print(f"{con_name}...")
+                try:
+                    query_res = connection.query(query, query_source=query_source, **query_options)
+                    query_res['MsticpyConnection'] = con_name
+                    results.append(query_res)
+                except MsticpyDataQueryError:
+                    print(f"Query {con_name} failed.")
         return pd.concat(results, ignore_index=True)
