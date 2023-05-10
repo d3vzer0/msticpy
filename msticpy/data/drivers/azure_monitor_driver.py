@@ -121,6 +121,7 @@ class AzureMonitorDriver(DriverBase):
             DriverProps.FORMATTERS,
             {"datetime": self._format_datetime, "list": self._format_list},
         )
+        self._support_threads = True
         self._loaded = True
         self._ua_policy = UserAgentPolicy(user_agent=mp_ua_header()["UserAgent"])
         self._def_timeout = kwargs.get(
