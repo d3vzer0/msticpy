@@ -93,7 +93,7 @@ class QueryProviderConnectionsMixin(QueryProviderProtocol):
                 all_tasks = {}
                 for con_name, connection in self._additional_connections.items():
                     try:
-                        task = executor.submit(connection.query, query, query_source=query_source, **query_options)
+                        task = executor.submit(connection._query_provider.query, query, query_source=query_source, **query_options)
                         all_tasks[task] = con_name
                     except MsticpyDataQueryError:
                         print(f"Query {con_name} failed.")
@@ -107,7 +107,7 @@ class QueryProviderConnectionsMixin(QueryProviderProtocol):
             for con_name, connection in self._additional_connections.items():
                 print(f"{con_name}...")
                 try:
-                    query_res = connection.query(query, query_source=query_source, **query_options)
+                    query_res = connection._query_provider.query(query, query_source=query_source, **query_options)
                     query_res['MsticpyConnection'] = con_name
                     results.append(query_res)
                 except MsticpyDataQueryError:
