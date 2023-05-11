@@ -225,8 +225,10 @@ class QueryProvider(QueryProviderConnectionsMixin, QueryProviderUtilsMixin):
     def _execute_query(self, *args, **kwargs) -> Union[pd.DataFrame, Any]:
         if not self._query_provider.loaded:
             raise ValueError("Provider is not loaded.")
+        
+        is_multi_connection = True if self._additional_connections else False
         if (
-            not self._query_provider.connected
+            (not self._query_provider.connected and not is_multi_connection)
             and not _help_flag(*args)
             and not _debug_flag(*args, **kwargs)
         ):
